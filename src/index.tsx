@@ -1215,9 +1215,21 @@ function adminHTML() {
     .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     .modal-box { background: #1c1c1c; border: 1px solid #444; border-radius: 16px; padding: 24px; max-width: 620px; width: 94%; max-height: 92vh; overflow-y: auto; }
-    .sidebar-btn { display: flex; align-items: center; gap-3; width: 100%; padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: #9ca3af; font-weight: 500; border: none; background: transparent; }
+    .sidebar-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 16px; border-radius: 8px; cursor: pointer; transition: all 0.2s; color: #9ca3af; font-weight: 500; border: none; background: transparent; text-align: left; }
     .sidebar-btn:hover { background: #222; color: #f0f0f0; }
     .sidebar-btn.active { background: rgba(225,29,72,0.15); color: #fb7185; }
+    /* モバイル用サイドバー */
+    #adminSidebar { transition: transform 0.3s ease; }
+    #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; }
+    @media (max-width: 767px) {
+      #adminSidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 50; transform: translateX(-100%); }
+      #adminSidebar.open { transform: translateX(0); }
+      #sidebarOverlay.open { display: block; }
+      #mobileHeader { display: flex !important; }
+      #adminMain { flex-direction: column; }
+      #adminContent { padding-top: 56px; }
+    }
+    #mobileHeader { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #111; border-bottom: 1px solid #333; z-index: 30; align-items: center; padding: 0 16px; gap: 12px; }
     .status-badge { font-size: 11px; border-radius: 100px; padding: 2px 10px; display: inline-block; }
     .status-published { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
     .status-draft { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
@@ -1230,6 +1242,17 @@ function adminHTML() {
   </style>
 </head>
 <body class="flex h-screen overflow-hidden">
+
+<!-- モバイルヘッダー -->
+<div id="mobileHeader">
+  <button onclick="toggleSidebar()" style="background:none;border:none;color:#f0f0f0;font-size:22px;cursor:pointer;padding:4px;">
+    <i class="fas fa-bars"></i>
+  </button>
+  <span style="font-size:14px;font-weight:900;color:#fb7185;"><i class="fas fa-music mr-1"></i>KUMAMOTO LIVE</span>
+</div>
+
+<!-- サイドバーオーバーレイ -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- ログイン画面 -->
 <div id="loginScreen" class="fixed inset-0 bg-gray-950 flex items-center justify-center z-50">
@@ -1260,35 +1283,35 @@ function adminHTML() {
 <!-- メイン管理画面 -->
 <div id="adminMain" class="hidden flex w-full h-full">
   <!-- サイドバー -->
-  <aside class="w-56 flex-shrink-0 border-r border-gray-800 flex flex-col" style="background:#111">
+  <aside id="adminSidebar" class="w-56 flex-shrink-0 border-r border-gray-800 flex flex-col" style="background:#111">
     <div class="p-4 border-b border-gray-800">
       <div class="text-sm font-black text-red-400"><i class="fas fa-music mr-1"></i>KUMAMOTO LIVE</div>
       <div class="text-xs text-gray-600 mt-0.5">管理画面</div>
     </div>
     <nav class="flex-1 p-3 space-y-1">
       <button class="sidebar-btn active" onclick="showSection('events')" id="nav-events">
-        <i class="fas fa-calendar-alt w-5"></i>イベント管理
+        <i class="fas fa-calendar-alt" style="width:18px;text-align:center;"></i>イベント管理
       </button>
       <button class="sidebar-btn" onclick="showSection('venues')" id="nav-venues">
-        <i class="fas fa-store w-5"></i>会場管理
+        <i class="fas fa-store" style="width:18px;text-align:center;"></i>会場管理
       </button>
       <button class="sidebar-btn" onclick="showSection('settings')" id="nav-settings">
-        <i class="fas fa-cog w-5"></i>設定
+        <i class="fas fa-cog" style="width:18px;text-align:center;"></i>設定
       </button>
     </nav>
     <div class="p-3 border-t border-gray-800">
       <p id="adminUsername" class="text-xs text-gray-500 mb-2"></p>
       <button onclick="doLogout()" class="sidebar-btn text-gray-500 text-sm">
-        <i class="fas fa-sign-out-alt w-5"></i>ログアウト
+        <i class="fas fa-sign-out-alt" style="width:18px;text-align:center;"></i>ログアウト
       </button>
       <a href="/" target="_blank" class="sidebar-btn text-gray-500 text-sm mt-1 block no-underline">
-        <i class="fas fa-external-link-alt w-5"></i>公開サイト
+        <i class="fas fa-external-link-alt" style="width:18px;text-align:center;"></i>公開サイト
       </a>
     </div>
   </aside>
 
   <!-- コンテンツエリア -->
-  <main class="flex-1 overflow-y-auto">
+  <main id="adminContent" class="flex-1 overflow-y-auto">
     <!-- ==================== イベント管理 ==================== -->
     <div id="section-events" class="p-6">
       <div class="flex items-center justify-between mb-6">
@@ -1544,6 +1567,18 @@ async function apiFetch(url, options = {}) {
   return res;
 }
 
+// ==================== モバイルサイドバー開閉 ====================
+function toggleSidebar() {
+  const sidebar = document.getElementById('adminSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('adminSidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
 // ==================== セクション切替 ====================
 function showSection(name) {
   ['events','venues','settings'].forEach(s => {
@@ -1551,6 +1586,8 @@ function showSection(name) {
     document.getElementById('nav-' + s).classList.toggle('active', s === name);
   });
   if (name === 'venues') loadAdminVenuesTable();
+  // モバイルではメニュー選択後に自動クローズ
+  closeSidebar();
 }
 
 // ==================== イベント管理 ====================
