@@ -10,7 +10,7 @@
     {
       "binding": "DB",
       "database_name": "kumamoto-live-production",
-      "database_id": "local-only-placeholder"
+      "database_id": "31daff8c-78a5-42dc-9038-05fcdf34bac0"
     }
   ]
 }
