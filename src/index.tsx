@@ -1222,14 +1222,14 @@ function adminHTML() {
     #adminSidebar { transition: transform 0.3s ease; }
     #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; }
     @media (max-width: 767px) {
-      #adminSidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 50; transform: translateX(-100%); }
+      #adminSidebar { position: fixed; top: 56px; left: 0; height: calc(100% - 56px); z-index: 50; transform: translateX(-100%); }
       #adminSidebar.open { transform: translateX(0); }
       #sidebarOverlay.open { display: block; }
       #mobileHeader { display: flex !important; }
       #adminMain { flex-direction: column; }
       #adminContent { margin-top: 56px; height: calc(100vh - 56px); }
     }
-    #mobileHeader { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #111; border-bottom: 1px solid #333; z-index: 30; align-items: center; padding: 0 16px; gap: 12px; }
+    #mobileHeader { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #111; border-bottom: 1px solid #333; z-index: 60; align-items: center; padding: 0 16px; gap: 12px; }
     .status-badge { font-size: 11px; border-radius: 100px; padding: 2px 10px; display: inline-block; }
     .status-published { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
     .status-draft { background: rgba(245,158,11,0.1); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
