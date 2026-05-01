@@ -794,10 +794,7 @@ function mainHTML() {
     <i class="fas fa-bolt" style="font-size:9px"></i>
     KUMAMOTO LIVE SCHEDULE
   </div>
-  <h1 class="hero-title">
-    熊本の<span class="hl">LIVE</span>を<br>まとめてチェック
-  </h1>
-  <p class="hero-sub">ライブハウス・ライブバーのスケジュールを一括検索</p>
+  <p class="hero-sub" style="margin-bottom:32px">ライブハウス・ライブバーのスケジュールを一括検索</p>
 
   <!-- 検索パネル -->
   <div id="searchPanel">
