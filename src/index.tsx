@@ -1227,7 +1227,7 @@ function adminHTML() {
       #sidebarOverlay.open { display: block; }
       #mobileHeader { display: flex !important; }
       #adminMain { flex-direction: column; }
-      #adminContent { padding-top: 56px; }
+      #adminContent { margin-top: 56px; height: calc(100vh - 56px); }
     }
     #mobileHeader { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: #111; border-bottom: 1px solid #333; z-index: 30; align-items: center; padding: 0 16px; gap: 12px; }
     .status-badge { font-size: 11px; border-radius: 100px; padding: 2px 10px; display: inline-block; }
