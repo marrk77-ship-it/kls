@@ -295,6 +295,69 @@ app.delete('/api/admin/venues/:id', authMiddleware, async (c) => {
   }
 })
 
+// 公開API: 地区一覧
+app.get('/api/areas', async (c) => {
+  const db = c.env.DB
+  try {
+    const result = await db.prepare('SELECT * FROM areas ORDER BY sort_order, name').all()
+    return c.json({ areas: result.results })
+  } catch (e) {
+    return c.json({ error: 'DB error' }, 500)
+  }
+})
+
+// 管理者: 地区一覧
+app.get('/api/admin/areas', authMiddleware, async (c) => {
+  const db = c.env.DB
+  try {
+    const result = await db.prepare('SELECT * FROM areas ORDER BY sort_order, name').all()
+    return c.json({ areas: result.results })
+  } catch (e) {
+    return c.json({ error: 'DB error' }, 500)
+  }
+})
+
+// 管理者: 地区作成
+app.post('/api/admin/areas', authMiddleware, async (c) => {
+  const { name, sort_order } = await c.req.json()
+  const db = c.env.DB
+  try {
+    const result = await db.prepare(
+      'INSERT INTO areas (name, sort_order) VALUES (?, ?)'
+    ).bind(name, sort_order || 0).run()
+    return c.json({ id: result.meta.last_row_id, success: true })
+  } catch (e) {
+    return c.json({ error: '同じ名前の地区が既に存在します', detail: String(e) }, 400)
+  }
+})
+
+// 管理者: 地区更新
+app.put('/api/admin/areas/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
+  const { name, sort_order } = await c.req.json()
+  const db = c.env.DB
+  try {
+    await db.prepare(
+      'UPDATE areas SET name=?, sort_order=? WHERE id=?'
+    ).bind(name, sort_order || 0, id).run()
+    return c.json({ success: true })
+  } catch (e) {
+    return c.json({ error: '同じ名前の地区が既に存在します', detail: String(e) }, 400)
+  }
+})
+
+// 管理者: 地区削除
+app.delete('/api/admin/areas/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
+  const db = c.env.DB
+  try {
+    await db.prepare('DELETE FROM areas WHERE id=?').bind(id).run()
+    return c.json({ success: true })
+  } catch (e) {
+    return c.json({ error: 'Delete error' }, 500)
+  }
+})
+
 // 管理者: パスワード変更
 app.put('/api/admin/password', authMiddleware, async (c) => {
   const adminId = c.get('adminId')
@@ -475,6 +538,12 @@ function mainHTML() {
       font-family: 'Noto Sans JP', sans-serif;
       transition: border-color 0.2s, box-shadow 0.2s;
       -webkit-appearance: none;
+      color-scheme: dark;
+    }
+    input[type="date"].s-input::-webkit-calendar-picker-indicator {
+      filter: invert(0.7) sepia(1) saturate(3) hue-rotate(300deg);
+      cursor: pointer;
+      opacity: 0.9;
     }
     .s-input:focus {
       outline: none;
@@ -1295,6 +1364,9 @@ function adminHTML() {
       <button class="sidebar-btn" onclick="showSection('venues')" id="nav-venues">
         <i class="fas fa-store" style="width:18px;text-align:center;"></i>会場管理
       </button>
+      <button class="sidebar-btn" onclick="showSection('areas')" id="nav-areas">
+        <i class="fas fa-map-marker-alt" style="width:18px;text-align:center;"></i>地区管理
+      </button>
       <button class="sidebar-btn" onclick="showSection('settings')" id="nav-settings">
         <i class="fas fa-cog" style="width:18px;text-align:center;"></i>設定
       </button>
@@ -1348,6 +1420,22 @@ function adminHTML() {
       </div>
     </div>
 
+    <!-- ==================== 地区管理 ==================== -->
+    <div id="section-areas" class="p-6 hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-bold">地区管理</h2>
+          <p class="text-gray-500 text-sm">会場の地区（エリア）の追加・編集・削除</p>
+        </div>
+        <button onclick="openAreaForm()" class="btn-primary">
+          <i class="fas fa-plus mr-1"></i>地区追加
+        </button>
+      </div>
+      <div id="areasTable" class="space-y-2">
+        <div class="text-center py-8 text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>読み込み中...</div>
+      </div>
+    </div>
+
     <!-- ==================== 設定 ==================== -->
     <div id="section-settings" class="p-6 hidden">
       <h2 class="text-xl font-bold mb-6">設定</h2>
@@ -1370,6 +1458,32 @@ function adminHTML() {
       </div>
     </div>
   </main>
+</div>
+
+<!-- 地区フォームモーダル -->
+<div id="areaFormModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:400px">
+    <div class="flex items-center justify-between mb-5">
+      <h3 id="areaFormTitle" class="text-lg font-bold">地区追加</h3>
+      <button onclick="closeAreaForm()" class="text-gray-500 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+    </div>
+    <form id="areaForm" onsubmit="saveArea(event)">
+      <input type="hidden" id="areaId">
+      <div class="form-group">
+        <label>地区名 <span class="text-red-400">*</span></label>
+        <input type="text" id="areaName" class="input-field" required placeholder="例: 下通、上通、新市街">
+      </div>
+      <div class="form-group">
+        <label>表示順 <span style="color:#6b7280;font-weight:400">（小さい数字が先）</span></label>
+        <input type="number" id="areaOrder" class="input-field" placeholder="0" min="0">
+      </div>
+      <p id="areaError" class="text-red-400 text-sm mb-3 hidden"></p>
+      <div class="flex gap-3 justify-end mt-4 pt-4 border-t border-gray-800">
+        <button type="button" onclick="closeAreaForm()" class="btn-secondary">キャンセル</button>
+        <button type="submit" class="btn-primary"><i class="fas fa-save mr-1"></i>保存する</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- イベントフォームモーダル -->
@@ -1395,12 +1509,12 @@ function adminHTML() {
           <input type="date" id="evDate" class="input-field" required>
         </div>
         <div class="form-group">
-          <label>開場時間</label>
-          <input type="time" id="evOpenTime" class="input-field">
+          <label>開場時間 <span style="color:#6b7280;font-weight:400">（例: 18:00）</span></label>
+          <input type="text" id="evOpenTime" class="input-field" placeholder="18:00" pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$">
         </div>
         <div class="form-group">
-          <label>開演時間</label>
-          <input type="time" id="evStartTime" class="input-field">
+          <label>開演時間 <span style="color:#6b7280;font-weight:400">（例: 19:00）</span></label>
+          <input type="text" id="evStartTime" class="input-field" placeholder="19:00" pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$">
         </div>
         <div class="form-group col-span-2">
           <label>出演アーティスト（カンマ区切り）</label>
@@ -1461,9 +1575,7 @@ function adminHTML() {
       <div class="form-group">
         <label>地区 <span class="text-red-400">*</span></label>
         <select id="vnArea" class="input-field" required>
-          <option value="下通">下通</option><option value="上通">上通</option>
-          <option value="新市街">新市街</option><option value="水道町">水道町</option>
-          <option value="帯山">帯山</option><option value="その他">その他</option>
+          <option value="">地区を選択...</option>
         </select>
       </div>
       <div class="form-group">
@@ -1545,8 +1657,32 @@ function showAdmin() {
   const now = new Date();
   document.getElementById('filterMonth').value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
   
+  loadAdminAreas().then(() => {
+    populateAreaSelects();
+  });
   loadAdminVenues();
   loadAdminEvents();
+}
+
+// 地区セレクトを動的に更新する
+function populateAreaSelects() {
+  const areaOptions = adminAreas.map(function(a) {
+    return '<option value="' + a.name + '">' + a.name + '</option>';
+  }).join('');
+  // 会場フォームの地区セレクト
+  const vnArea = document.getElementById('vnArea');
+  if (vnArea) {
+    const cur = vnArea.value;
+    vnArea.innerHTML = '<option value="">地区を選択...</option>' + areaOptions;
+    if (cur) vnArea.value = cur;
+  }
+  // 公開サイトの検索エリアセレクトも更新
+  const searchArea = document.getElementById('searchArea');
+  if (searchArea) {
+    const cur = searchArea.value;
+    searchArea.innerHTML = '<option value="">すべての地区</option>' + areaOptions;
+    if (cur) searchArea.value = cur;
+  }
 }
 
 // ==================== API ヘルパー ====================
@@ -1581,11 +1717,12 @@ function closeSidebar() {
 
 // ==================== セクション切替 ====================
 function showSection(name) {
-  ['events','venues','settings'].forEach(s => {
+  ['events','venues','areas','settings'].forEach(s => {
     document.getElementById('section-' + s).classList.toggle('hidden', s !== name);
     document.getElementById('nav-' + s).classList.toggle('active', s === name);
   });
   if (name === 'venues') loadAdminVenuesTable();
+  if (name === 'areas') loadAreasTable();
   // モバイルではメニュー選択後に自動クローズ
   closeSidebar();
 }
@@ -1722,6 +1859,16 @@ async function deleteEvent(id) {
 }
 
 // ==================== 会場管理 ====================
+let adminAreas = [];
+
+async function loadAdminAreas() {
+  try {
+    const res = await apiFetch('/api/admin/areas');
+    const data = await res.json();
+    adminAreas = data.areas || [];
+  } catch(e) {}
+}
+
 async function loadAdminVenues() {
   try {
     const res = await apiFetch('/api/admin/venues');
@@ -1767,10 +1914,15 @@ function openVenueFormById(id) {
 function openVenueForm(v) {
   document.getElementById('venueFormModal').classList.remove('hidden');
   document.getElementById('venueFormTitle').textContent = v ? '会場編集' : '会場追加';
+  // 地区セレクトを最新の地区リストで更新
+  const vnArea = document.getElementById('vnArea');
+  const areaOpts = '<option value="">地区を選択...</option>' +
+    adminAreas.map(function(a) { return '<option value="' + a.name + '">' + a.name + '</option>'; }).join('');
+  vnArea.innerHTML = areaOpts;
   if (v) {
     document.getElementById('venueId').value = v.id;
     document.getElementById('vnName').value = v.name || '';
-    document.getElementById('vnArea').value = v.area || '';
+    vnArea.value = v.area || '';
     document.getElementById('vnAddress').value = v.address || '';
     document.getElementById('vnPhone').value = v.phone || '';
     document.getElementById('vnWebsite').value = v.website || '';
@@ -1778,6 +1930,7 @@ function openVenueForm(v) {
   } else {
     document.getElementById('venueId').value = '';
     document.getElementById('venueForm').reset();
+    vnArea.innerHTML = areaOpts;
   }
 }
 
@@ -1818,6 +1971,89 @@ async function deleteVenue(id) {
   try {
     const res = await apiFetch(\`/api/admin/venues/\${id}\`, { method: 'DELETE' });
     if (res.ok) { loadAdminVenuesTable(); loadAdminVenues(); }
+    else alert('削除エラー');
+  } catch(e) { alert('エラー'); }
+}
+
+// ==================== 地区管理 ====================
+async function loadAreasTable() {
+  await loadAdminAreas();
+  const el = document.getElementById('areasTable');
+  if (adminAreas.length === 0) {
+    el.innerHTML = '<p class="text-gray-500 text-center py-8">地区がありません</p>';
+    return;
+  }
+  el.innerHTML = adminAreas.map(function(a) {
+    return '<div class="card p-4 flex items-center justify-between gap-3">' +
+      '<div class="flex items-center gap-3">' +
+        '<span class="text-xs text-gray-500 w-8 text-right">' + a.sort_order + '</span>' +
+        '<span class="font-bold">' + a.name + '</span>' +
+      '</div>' +
+      '<div class="flex gap-2">' +
+        '<button class="btn-edit" onclick="openAreaFormById(' + a.id + ')">\u7de8\u96c6</button>' +
+        '<button class="btn-danger" onclick="deleteArea(' + a.id + ')">\u524a\u9664</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openAreaFormById(id) {
+  const a = adminAreas.find(x => x.id === id);
+  openAreaForm(a || null);
+}
+
+function openAreaForm(a) {
+  document.getElementById('areaFormModal').classList.remove('hidden');
+  document.getElementById('areaFormTitle').textContent = a ? '地区編集' : '地区追加';
+  document.getElementById('areaError').classList.add('hidden');
+  if (a) {
+    document.getElementById('areaId').value = a.id;
+    document.getElementById('areaName').value = a.name || '';
+    document.getElementById('areaOrder').value = a.sort_order ?? 0;
+  } else {
+    document.getElementById('areaId').value = '';
+    document.getElementById('areaForm').reset();
+  }
+}
+
+function closeAreaForm() {
+  document.getElementById('areaFormModal').classList.add('hidden');
+}
+
+async function saveArea(e) {
+  e.preventDefault();
+  const id = document.getElementById('areaId').value;
+  const body = {
+    name: document.getElementById('areaName').value.trim(),
+    sort_order: parseInt(document.getElementById('areaOrder').value) || 0,
+  };
+  const errEl = document.getElementById('areaError');
+  try {
+    const res = await apiFetch(
+      id ? '/api/admin/areas/' + id : '/api/admin/areas',
+      { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) }
+    );
+    if (res.ok) {
+      closeAreaForm();
+      await loadAreasTable();
+      populateAreaSelects();
+    } else {
+      const d = await res.json();
+      errEl.textContent = d.error || '保存エラー';
+      errEl.classList.remove('hidden');
+    }
+  } catch(e) {
+    errEl.textContent = 'エラーが発生しました';
+    errEl.classList.remove('hidden');
+  }
+}
+
+async function deleteArea(id) {
+  const a = adminAreas.find(x => x.id === id);
+  if (!confirm('「' + (a ? a.name : 'この地区') + '」を削除しますか？\n※この地区を使用している会場の地区名はそのまま残ります。')) return;
+  try {
+    const res = await apiFetch('/api/admin/areas/' + id, { method: 'DELETE' });
+    if (res.ok) { loadAreasTable(); populateAreaSelects(); }
     else alert('削除エラー');
   } catch(e) { alert('エラー'); }
 }
