@@ -2050,7 +2050,7 @@ async function saveArea(e) {
 
 async function deleteArea(id) {
   const a = adminAreas.find(x => x.id === id);
-  if (!confirm('「' + (a ? a.name : 'この地区') + '」を削除しますか？\n※この地区を使用している会場の地区名はそのまま残ります。')) return;
+  if (!confirm('「' + (a ? a.name : 'この地区') + '」を削除しますか？')) return;
   try {
     const res = await apiFetch('/api/admin/areas/' + id, { method: 'DELETE' });
     if (res.ok) { loadAreasTable(); populateAreaSelects(); }
