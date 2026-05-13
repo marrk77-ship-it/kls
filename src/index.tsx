@@ -492,14 +492,7 @@ function mainHTML() {
       position: absolute; inset: 0; z-index: 0;
       background: rgba(0,0,0,0.15);
     }
-    /* 下部ベージュグラデーション（控えめ・下端のみ） */
-    #hero::after {
-      content: '';
-      position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
-      height: 90px;
-      background: linear-gradient(to bottom, transparent 0%, rgba(245,240,235,0.9) 80%, rgba(245,240,235,1) 100%);
-      pointer-events: none;
-    }
+
     .hero-eyebrow {
       position: relative; z-index: 1;
       display: inline-flex; align-items: center; gap: 8px;
