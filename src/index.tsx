@@ -471,23 +471,32 @@ function mainHTML() {
     /* ─── ヒーロー ─── */
     #hero {
       position: relative; overflow: hidden;
-      padding: 56px 24px 52px;
+      padding: 72px 24px 64px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
-      background: linear-gradient(160deg, #fff8f4 0%, var(--bg) 100%);
+      /* 写真背景 */
+      background-image: url('https://www.genspark.ai/api/files/s/nKS8iySW');
+      background-size: cover;
+      background-position: center 60%;
+      background-repeat: no-repeat;
     }
+    /* 写真の上に暗めグラデーションオーバーレイ */
     #hero::before {
       content: '';
       position: absolute; inset: 0; z-index: 0;
       background:
-        radial-gradient(ellipse 70% 55% at 15% 50%, rgba(192,57,43,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 55% 45% at 85% 40%, rgba(42,123,111,0.05) 0%, transparent 70%);
+        linear-gradient(
+          to bottom,
+          rgba(8,14,28,0.62) 0%,
+          rgba(8,14,28,0.52) 50%,
+          rgba(8,14,28,0.72) 100%
+        );
     }
     .hero-eyebrow {
       position: relative; z-index: 1;
       display: inline-flex; align-items: center; gap: 8px;
       font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
-      color: var(--accent); border: 1px solid rgba(192,57,43,0.3);
-      background: var(--accent-dim); border-radius: 100px;
+      color: #ffcfb0; border: 1px solid rgba(255,180,120,0.45);
+      background: rgba(255,140,60,0.15); border-radius: 100px;
       padding: 4px 16px; margin-bottom: 20px;
     }
     .hero-title {
@@ -495,33 +504,35 @@ function mainHTML() {
       font-family: 'Oswald', sans-serif;
       font-size: clamp(34px, 6vw, 68px);
       font-weight: 700; line-height: 1.05;
-      letter-spacing: -0.01em; color: var(--text);
+      letter-spacing: -0.01em; color: #ffffff;
       margin-bottom: 16px;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.5);
     }
-    .hero-title .hl { color: var(--accent); }
+    .hero-title .hl { color: #ffaa70; }
     .hero-sub {
       position: relative; z-index: 1;
-      font-size: 14px; color: var(--muted); margin-bottom: 40px;
+      font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 40px;
       letter-spacing: 0.05em;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
     }
 
-    /* 区切りライン */
+    /* 区切りライン（写真下端をぼかすグラデーション） */
     .spectrum-line {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 2px; z-index: 1;
-      background: linear-gradient(90deg,
-        transparent 0%, var(--accent) 40%, var(--teal) 70%, transparent 100%);
-      opacity: 0.35;
+      position: absolute; bottom: 0; left: 0; right: 0; height: 80px; z-index: 1;
+      background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
+      pointer-events: none;
     }
 
     /* ─── 検索パネル ─── */
     #searchPanel {
       position: relative; z-index: 2;
-      background: var(--bg1);
-      border: 1px solid var(--border-mid);
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255,255,255,0.6);
       border-radius: 16px;
       padding: 20px 24px;
       width: 100%; max-width: 860px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.12);
+      backdrop-filter: blur(12px);
     }
     .s-label {
       font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
