@@ -455,6 +455,9 @@ function mainHTML() {
       border-bottom: 1px solid var(--border-mid);
       backdrop-filter: blur(12px);
     }
+    @media(max-width:640px){
+      #topnav { height: 68px; padding: 0 16px; }
+    }
     .logo {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 26px; letter-spacing: 0.08em;
@@ -471,8 +474,8 @@ function mainHTML() {
     /* ─── ヒーロー ─── */
     #hero {
       position: relative; overflow: hidden;
-      padding: 140px 24px 120px;
-      min-height: 520px;
+      padding: 140px 24px 140px;
+      min-height: 620px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
       /* 写真背景 */
       background-image: url('/static/hero.jpg');
@@ -481,7 +484,7 @@ function mainHTML() {
       background-repeat: no-repeat;
     }
     @media(max-width:640px){
-      #hero { padding: 100px 20px 100px; min-height: 420px; }
+      #hero { padding: 100px 20px 100px; min-height: 440px; }
     }
     /* オーバーレイ：写真を見せるため最小限のみ */
     #hero::before {
@@ -489,12 +492,12 @@ function mainHTML() {
       position: absolute; inset: 0; z-index: 0;
       background: rgba(0,0,0,0.15);
     }
-    /* 下部ベージュグラデーション */
+    /* 下部ベージュグラデーション（控えめ・下端のみ） */
     #hero::after {
       content: '';
       position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
-      height: 180px;
-      background: linear-gradient(to bottom, transparent 0%, rgba(245,240,235,0.72) 60%, rgba(245,240,235,1) 100%);
+      height: 90px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(245,240,235,0.9) 80%, rgba(245,240,235,1) 100%);
       pointer-events: none;
     }
     .hero-eyebrow {
