@@ -483,18 +483,11 @@ function mainHTML() {
     @media(max-width:640px){
       #hero { padding: 100px 20px 100px; min-height: 420px; }
     }
-    /* 写真の上のオーバーレイ：ほぼ透明、下端だけ背景色へフェード */
+    /* オーバーレイ：写真を見せるため最小限のみ */
     #hero::before {
       content: '';
       position: absolute; inset: 0; z-index: 0;
-      background:
-        linear-gradient(
-          to bottom,
-          rgba(4,10,22,0.15) 0%,
-          rgba(4,10,22,0.05) 30%,
-          rgba(4,10,22,0.05) 65%,
-          var(--bg) 100%
-        );
+      background: rgba(0,0,0,0.15);
     }
     .hero-eyebrow {
       position: relative; z-index: 1;
@@ -522,12 +515,8 @@ function mainHTML() {
       text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 2px 12px rgba(0,0,0,0.7);
     }
 
-    /* 区切りライン（写真下端をぼかすグラデーション） */
-    .spectrum-line {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 120px; z-index: 1;
-      background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
-      pointer-events: none;
-    }
+    /* 区切りライン */
+    .spectrum-line { display: none; }
 
     /* ─── 検索パネル ─── */
     #searchPanel {
