@@ -489,6 +489,14 @@ function mainHTML() {
       position: absolute; inset: 0; z-index: 0;
       background: rgba(0,0,0,0.15);
     }
+    /* 下部ベージュグラデーション */
+    #hero::after {
+      content: '';
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 1;
+      height: 180px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(245,240,235,0.72) 60%, rgba(245,240,235,1) 100%);
+      pointer-events: none;
+    }
     .hero-eyebrow {
       position: relative; z-index: 1;
       display: inline-flex; align-items: center; gap: 8px;
@@ -521,13 +529,13 @@ function mainHTML() {
     /* ─── 検索パネル ─── */
     #searchPanel {
       position: relative; z-index: 2;
-      background: rgba(255,255,255,0.96);
-      border: 1px solid rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.55);
+      border: 1px solid rgba(255,255,255,0.7);
       border-radius: 16px;
       padding: 20px 24px;
       width: 100%; max-width: 860px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.12);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+      backdrop-filter: blur(16px) saturate(1.4);
     }
     .s-label {
       font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
