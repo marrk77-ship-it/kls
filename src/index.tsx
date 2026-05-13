@@ -475,7 +475,7 @@ function mainHTML() {
       min-height: 520px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
       /* 写真背景 */
-      background-image: url('https://www.genspark.ai/api/files/s/nKS8iySW');
+      background-image: url('/static/hero.jpg');
       background-size: cover;
       background-position: center 55%;
       background-repeat: no-repeat;
