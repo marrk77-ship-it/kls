@@ -591,78 +591,98 @@ function mainHTML() {
     /* ─── カレンダー ─── */
     .cal-nav {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .cal-month-title {
       font-family: 'Oswald', sans-serif;
-      font-size: 28px; letter-spacing: 0.04em; color: #fff;
+      font-size: 30px; letter-spacing: 0.04em; color: #fff;
     }
     .cal-nav-btn {
-      width: 36px; height: 36px; border-radius: 8px;
-      border: 1px solid var(--border); background: var(--bg2);
-      color: var(--muted); cursor: pointer; font-size: 14px;
+      width: 40px; height: 40px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.2); background: var(--bg2);
+      color: #c0c0d8; cursor: pointer; font-size: 15px;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
-    .cal-nav-btn:hover { border-color: var(--red); color: var(--red); }
+    .cal-nav-btn:hover { border-color: var(--red); color: var(--red); background: rgba(255,58,92,0.08); }
 
-    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
     .cal-head {
-      text-align: center; font-size: 12px; font-weight: 700;
-      letter-spacing: 0.1em; padding: 8px 0; color: #c0c0d0;
+      text-align: center; font-size: 12px; font-weight: 800;
+      letter-spacing: 0.12em; padding: 10px 0 8px; color: #c8c8d8;
+      border-bottom: 2px solid rgba(255,255,255,0.08); margin-bottom: 2px;
     }
-    .cal-head.sun { color: #ff7070; }
-    .cal-head.sat { color: #6aadff; }
+    .cal-head.sun { color: #ff7a7a; border-bottom-color: rgba(255,122,122,0.3); }
+    .cal-head.sat { color: #70b8ff; border-bottom-color: rgba(112,184,255,0.3); }
 
     .cal-cell {
-      min-height: 82px; border-radius: 8px;
-      background: var(--bg2); border: 1px solid rgba(255,255,255,0.12);
-      padding: 7px 6px; cursor: pointer; position: relative;
+      min-height: 100px; border-radius: 10px;
+      background: var(--bg2); border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 7px; cursor: pointer; position: relative;
       transition: all 0.18s;
     }
-    .cal-cell:hover { background: var(--bg3); border-color: rgba(255,255,255,0.25); }
-    .cal-cell.has-ev { border-color: rgba(255,58,92,0.5); background: rgba(255,58,92,0.05); }
+    .cal-cell:hover { background: var(--bg3); border-color: rgba(255,255,255,0.28); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+    .cal-cell.has-ev { border-color: rgba(255,58,92,0.45); background: rgba(255,58,92,0.06); }
+    .cal-cell.has-ev:hover { border-color: rgba(255,58,92,0.7); }
     .cal-cell.selected {
-      background: rgba(255,58,92,0.13);
+      background: rgba(255,58,92,0.14);
       border-color: var(--red);
-      box-shadow: 0 0 16px rgba(255,58,92,0.2);
+      box-shadow: 0 0 0 2px rgba(255,58,92,0.3), 0 4px 20px rgba(255,58,92,0.2);
     }
-    .cal-cell.other { opacity: 0.35; }
-    .cal-cell.sun-c .day-n { color: #ff7070; }
-    .cal-cell.sat-c .day-n { color: #6aadff; }
+    .cal-cell.other { opacity: 0.3; pointer-events: none; }
+    .cal-cell.sun-c .day-n { color: #ff7a7a; }
+    .cal-cell.sat-c .day-n { color: #70b8ff; }
 
     .day-n {
-      font-size: 14px; font-weight: 700;
-      width: 26px; height: 26px;
+      font-size: 15px; font-weight: 800;
+      width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 4px; color: #e8e8f0;
+      margin-bottom: 5px; color: #e8e8f4;
+      border-radius: 50%;
     }
     .cal-cell.today .day-n {
-      background: var(--red); color: #fff; border-radius: 50%;
+      background: var(--red); color: #fff;
+      box-shadow: 0 2px 8px rgba(255,58,92,0.5);
+    }
+    .cal-cell.selected:not(.today) .day-n {
+      background: rgba(255,58,92,0.25); color: #fff;
     }
 
+    /* イベント件数バッジ（PC） */
+    .ev-count-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: #fff;
+      background: var(--red); border-radius: 4px;
+      padding: 1px 6px; margin-bottom: 3px;
+      letter-spacing: 0.03em;
+    }
     .ev-pill {
       display: block; font-size: 10px; font-weight: 700;
-      border-radius: 3px; padding: 2px 5px; margin-bottom: 2px;
+      border-radius: 4px; padding: 2px 6px; margin-bottom: 2px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       max-width: 100%; color: #fff;
-      background: var(--red);
-      letter-spacing: 0.02em;
+      background: rgba(255,58,92,0.75);
+      letter-spacing: 0.01em; line-height: 1.4;
     }
-    .ev-pill.jazz    { background: #7c3aed; }
-    .ev-pill.blues   { background: #2563eb; }
-    .ev-pill.acoustic{ background: #059669; }
-    .ev-pill.soul    { background: #d97706; }
-    .ev-pill.idol    { background: #db2777; }
-    .ev-more { font-size: 10px; color: #aaaabc; font-weight:700; }
+    .ev-pill.jazz    { background: rgba(124,58,237,0.8); }
+    .ev-pill.blues   { background: rgba(37,99,235,0.8); }
+    .ev-pill.acoustic{ background: rgba(5,150,105,0.8); }
+    .ev-pill.soul    { background: rgba(217,119,6,0.8); }
+    .ev-pill.idol    { background: rgba(219,39,119,0.8); }
+    .ev-more {
+      font-size: 10px; color: #c0c0d0; font-weight: 800;
+      background: rgba(255,255,255,0.08); border-radius: 3px;
+      padding: 1px 5px; display: inline-block;
+    }
 
     @media(max-width:600px){
-      .cal-cell { min-height: 48px; padding: 4px 3px; }
+      .cal-cell { min-height: 52px; padding: 5px 4px; }
       .ev-pill  { display: none; }
-      .cal-cell.has-ev::after {
-        content: ''; display: block; width: 5px; height: 5px;
-        border-radius: 50%; background: var(--red); margin: 2px auto 0;
+      .cal-cell.has-ev .day-n {
+        background: var(--red); color: #fff; border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(255,58,92,0.4);
       }
+      .cal-cell.today .day-n { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--red); }
     }
 
     /* 選択日パネル */
@@ -852,9 +872,12 @@ function mainHTML() {
 <nav id="topnav">
   <div style="display:flex;align-items:baseline;gap:10px">
     <div class="logo">KUMAMOTO LIVE GUIDE</div>
-    <div class="logo-sub">熊本ライブ情報</div>
+    <div class="logo-sub" id="logoSub">熊本ライブ情報</div>
   </div>
-  <div id="currentMonthLabel" style="font-size:12px;color:var(--muted);letter-spacing:0.1em"></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div id="currentMonthLabel" style="font-size:12px;color:var(--muted);letter-spacing:0.1em"></div>
+    <button id="langBtn" onclick="toggleLang()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#c0c0d0;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.08em;transition:all 0.2s;font-family:'Noto Sans JP',sans-serif;">EN</button>
+  </div>
 </nav>
 
 <!-- ヒーロー -->
@@ -863,17 +886,17 @@ function mainHTML() {
     <i class="fas fa-bolt" style="font-size:9px"></i>
     KUMAMOTO LIVE SCHEDULE
   </div>
-  <p class="hero-sub" style="margin-bottom:32px">ライブハウス・ライブバーのスケジュールを一括検索</p>
+  <p class="hero-sub" id="heroSub" style="margin-bottom:32px">ライブハウス・ライブバーのスケジュールを一括検索</p>
 
   <!-- 検索パネル -->
   <div id="searchPanel">
     <div class="s-grid">
       <div>
-        <span class="s-label"><i class="fas fa-calendar-alt" style="margin-right:4px"></i>日付</span>
+        <span class="s-label" id="lbl-date"><i class="fas fa-calendar-alt" style="margin-right:4px"></i>日付</span>
         <input type="date" id="searchDate" class="s-input">
       </div>
       <div>
-        <span class="s-label"><i class="fas fa-map-marker-alt" style="margin-right:4px"></i>地区</span>
+        <span class="s-label" id="lbl-area"><i class="fas fa-map-marker-alt" style="margin-right:4px"></i>地区</span>
         <select id="searchArea" class="s-input">
           <option value="">すべての地区</option>
           <option value="下通">下通</option>
@@ -885,15 +908,15 @@ function mainHTML() {
         </select>
       </div>
       <div>
-        <span class="s-label"><i class="fas fa-store" style="margin-right:4px"></i>会場</span>
+        <span class="s-label" id="lbl-venue"><i class="fas fa-store" style="margin-right:4px"></i>会場</span>
         <select id="searchVenue" class="s-input">
-          <option value="">すべての会場</option>
+          <option value="" id="opt-venue-all">すべての会場</option>
         </select>
       </div>
       <div>
-        <span class="s-label"><i class="fas fa-guitar" style="margin-right:4px"></i>ジャンル</span>
+        <span class="s-label" id="lbl-genre"><i class="fas fa-guitar" style="margin-right:4px"></i>ジャンル</span>
         <select id="searchGenre" class="s-input">
-          <option value="">すべてのジャンル</option>
+          <option value="" id="opt-genre-all">すべてのジャンル</option>
           <option value="ロック">ロック</option>
           <option value="ジャズ">ジャズ</option>
           <option value="ブルース">ブルース</option>
@@ -909,7 +932,7 @@ function mainHTML() {
     <div style="display:flex;gap:8px">
       <input type="text" id="searchKeyword" class="s-input" style="flex:1"
         placeholder="アーティスト名・イベント名で検索...">
-      <button onclick="doSearch()" class="btn-search"><i class="fas fa-search" style="margin-right:6px"></i>検索</button>
+      <button onclick="doSearch()" class="btn-search" id="btn-search"><i class="fas fa-search" style="margin-right:6px"></i>検索</button>
       <button onclick="clearSearch()" class="btn-clear" title="クリア"><i class="fas fa-times"></i></button>
     </div>
   </div>
@@ -921,10 +944,10 @@ function mainHTML() {
   <!-- タブ -->
   <div class="tab-bar">
     <button class="tab-btn active" onclick="showTab('calendar')" id="tab-calendar">
-      <i class="fas fa-calendar-alt" style="margin-right:6px"></i>カレンダー
+      <i class="fas fa-calendar-alt" style="margin-right:6px"></i><span id="lbl-tab-cal">カレンダー</span>
     </button>
     <button class="tab-btn" onclick="showTab('list')" id="tab-list">
-      <i class="fas fa-list" style="margin-right:6px"></i>一覧
+      <i class="fas fa-list" style="margin-right:6px"></i><span id="lbl-tab-list">一覧</span>
     </button>
   </div>
 
@@ -959,8 +982,8 @@ function mainHTML() {
     <div id="eventList" class="ev-cards"></div>
     <div id="noResults" class="hidden empty-state">
       <i class="fas fa-music"></i>
-      <p style="font-size:16px;color:#555;margin-bottom:6px">イベントが見つかりませんでした</p>
-      <p>検索条件を変えてお試しください</p>
+      <p style="font-size:16px;color:#555;margin-bottom:6px" id="lbl-no-results">イベントが見つかりませんでした</p>
+      <p id="lbl-no-results-sub">検索条件を変えてお試しください</p>
     </div>
   </div>
 </main>
@@ -976,7 +999,7 @@ function mainHTML() {
 <!-- フッター -->
 <footer>
   <div class="footer-logo">KUMAMOTO LIVE GUIDE</div>
-  <div>熊本市内のライブハウス・ライブバーのスケジュール情報サイト</div>
+  <div id="footer-desc">熊本市内のライブハウス・ライブバーのスケジュール情報サイト</div>
 </footer>
 
 <script>
@@ -986,6 +1009,91 @@ let calendarEvents = {};
 let selectedDate = null;
 let currentTab = 'calendar';
 let allEvents = [];
+let currentLang = 'ja';
+
+// ==================== 翻訳辞書 ====================
+const i18n = {
+  ja: {
+    logoSub:       '熊本ライブ情報',
+    heroSub:       'ライブハウス・ライブバーのスケジュールを一括検索',
+    'lbl-date':    '<i class="fas fa-calendar-alt" style="margin-right:4px"></i>日付',
+    'lbl-area':    '<i class="fas fa-map-marker-alt" style="margin-right:4px"></i>地区',
+    'lbl-venue':   '<i class="fas fa-store" style="margin-right:4px"></i>会場',
+    'lbl-genre':   '<i class="fas fa-guitar" style="margin-right:4px"></i>ジャンル',
+    'btn-search':  '<i class="fas fa-search" style="margin-right:6px"></i>検索',
+    'lbl-tab-cal': 'カレンダー',
+    'lbl-tab-list':'一覧',
+    'lbl-no-results':    'イベントが見つかりませんでした',
+    'lbl-no-results-sub':'検索条件を変えてお試しください',
+    'footer-desc': '熊本市内のライブハウス・ライブバーのスケジュール情報サイト',
+    'opt-venue-all': 'すべての会場',
+    'opt-genre-all': 'すべてのジャンル',
+    searchPlaceholder: 'アーティスト名・イベント名で検索...',
+    langBtn: 'EN'
+  },
+  en: {
+    logoSub:       'Kumamoto Live Info',
+    heroSub:       'Search live house & bar schedules across Kumamoto',
+    'lbl-date':    '<i class="fas fa-calendar-alt" style="margin-right:4px"></i>Date',
+    'lbl-area':    '<i class="fas fa-map-marker-alt" style="margin-right:4px"></i>Area',
+    'lbl-venue':   '<i class="fas fa-store" style="margin-right:4px"></i>Venue',
+    'lbl-genre':   '<i class="fas fa-guitar" style="margin-right:4px"></i>Genre',
+    'btn-search':  '<i class="fas fa-search" style="margin-right:6px"></i>Search',
+    'lbl-tab-cal': 'Calendar',
+    'lbl-tab-list':'List',
+    'lbl-no-results':    'No events found',
+    'lbl-no-results-sub':'Try changing your search criteria',
+    'footer-desc': 'Kumamoto live house & bar schedule guide',
+    'opt-venue-all': 'All Venues',
+    'opt-genre-all': 'All Genres',
+    searchPlaceholder: 'Search by artist or event name...',
+    langBtn: 'JA'
+  }
+};
+
+function toggleLang() {
+  currentLang = currentLang === 'ja' ? 'en' : 'ja';
+  applyLang();
+  // カレンダーを再描画（月名表示を切り替え）
+  renderCalendar();
+  // リスト表示中なら再描画
+  if (currentTab === 'list' && allEvents.length > 0) renderList(allEvents);
+  // 選択日パネルも再描画
+  if (selectedDate) {
+    const evs = calendarEvents[selectedDate] || [];
+    if (evs.length > 0) {
+      document.getElementById('selectedDateEventList').innerHTML =
+        evs.map(ev => renderCard(ev)).join('');
+    }
+  }
+}
+
+function applyLang() {
+  const t = i18n[currentLang];
+  // innerHTML で更新（アイコン含む要素）
+  ['lbl-date','lbl-area','lbl-venue','lbl-genre','btn-search'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = t[id];
+  });
+  // textContent で更新（テキストのみ要素）
+  ['lbl-tab-cal','lbl-tab-list','lbl-no-results','lbl-no-results-sub','footer-desc','logoSub','heroSub'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t[id];
+  });
+  // 言語ボタンラベル
+  const langBtn = document.getElementById('langBtn');
+  if (langBtn) langBtn.textContent = t.langBtn;
+  // プレースホルダー
+  const kw = document.getElementById('searchKeyword');
+  if (kw) kw.placeholder = t.searchPlaceholder;
+  // セレクト先頭オプション
+  const venueEl = document.getElementById('opt-venue-all');
+  if (venueEl) venueEl.textContent = t['opt-venue-all'];
+  const genreEl = document.getElementById('opt-genre-all');
+  if (genreEl) genreEl.textContent = t['opt-genre-all'];
+  // html lang 属性
+  document.documentElement.lang = currentLang === 'en' ? 'en' : 'ja';
+}
 
 async function init() {
   const now = new Date();
@@ -1030,8 +1138,14 @@ async function loadMonthEvents() {
 function renderCalendar() {
   const y = currentMonth.getFullYear();
   const m = currentMonth.getMonth();
-  document.getElementById('calMonthTitle').textContent =
-    y + ' / ' + String(m+1).padStart(2,'0');
+  const monthNames = ['January','February','March','April','May','June',
+    'July','August','September','October','November','December'];
+  const titleEl = document.getElementById('calMonthTitle');
+  if (currentLang === 'en') {
+    titleEl.textContent = monthNames[m] + ' ' + y;
+  } else {
+    titleEl.textContent = y + ' / ' + String(m+1).padStart(2,'0');
+  }
 
   const firstDay  = new Date(y, m, 1).getDay();
   const lastDate  = new Date(y, m+1, 0).getDate();
@@ -1063,14 +1177,22 @@ function renderCalendar() {
     const evs = calendarEvents[ds] || [];
     if (evs.length) cls.push('has-ev');
 
-    const pills = evs.slice(0,3).map(ev => {
-      const gc = getGenreCls(ev.genre);
-      return \`<span class="ev-pill \${gc}">\${ev.venue_name||ev.title}</span>\`;
-    }).join('');
-    const more = evs.length > 3 ? \`<span class="ev-more">+\${evs.length-3}</span>\` : '';
+    let inner = '';
+    if (evs.length > 0) {
+      // イベント件数バッジ
+      inner += \`<div class="ev-count-badge">\${evs.length} event\${evs.length>1?'s':''}</div>\`;
+      // 最大2件までピル表示（スペース確保のため）
+      evs.slice(0,2).forEach(ev => {
+        const gc = getGenreCls(ev.genre);
+        inner += \`<span class="ev-pill \${gc}">\${ev.venue_name||ev.title}</span>\`;
+      });
+      if (evs.length > 2) {
+        inner += \`<span class="ev-more">+\${evs.length-2} more</span>\`;
+      }
+    }
 
     html += \`<div class="\${cls.join(' ')}" onclick="selectDate('\${ds}')">
-      <div class="day-n">\${dn}</div>\${pills}\${more}
+      <div class="day-n">\${dn}</div>\${inner}
     </div>\`;
   }
   document.getElementById('calendarBody').innerHTML = html;
@@ -1156,8 +1278,10 @@ function renderCard(ev) {
   const d = new Date(ev.event_date+'T00:00:00');
   const wd = ['SUN','MON','TUE','WED','THU','FRI','SAT'][d.getDay()];
   const dl = \`\${d.getMonth()+1}/\${String(d.getDate()).padStart(2,'0')} \${wd}\`;
-  const tl = ev.open_time ? \`開場 \${ev.open_time}　\` : '';
-  const sl = ev.start_time ? \`開演 \${ev.start_time}\` : '';
+  const openLbl  = currentLang === 'en' ? 'Open ' : '開場 ';
+  const startLbl = currentLang === 'en' ? 'Start ' : '開演 ';
+  const tl = ev.open_time  ? openLbl  + ev.open_time  + '　' : '';
+  const sl = ev.start_time ? startLbl + ev.start_time : '';
   return \`
     <div class="ev-card" onclick="showDetail(\${ev.id})">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
@@ -1207,7 +1331,16 @@ async function showDetail(id) {
   try {
     const ev = (await (await fetch('/api/events/'+id)).json()).event;
     const d = new Date(ev.event_date+'T00:00:00');
-    const wd = ['日','月','火','水','木','金','土'][d.getDay()];
+    const isEn = currentLang === 'en';
+    const wdJa = ['日','月','火','水','木','金','土'][d.getDay()];
+    const wdEn = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    const dateStr = isEn
+      ? (d.getFullYear() + ' / ' + String(d.getMonth()+1).padStart(2,'0') + ' / ' + String(d.getDate()).padStart(2,'0') + ' (' + wdEn + ')')
+      : (d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + wdJa + '）');
+    const openLbl  = isEn ? 'Doors Open' : '開場';
+    const startLbl = isEn ? 'Show Start' : '開演';
+    const ticketLbl   = isEn ? 'Buy Tickets' : 'チケット購入';
+    const venueLbl    = isEn ? 'Venue Website' : '会場公式サイト';
     const artists = ev.artists ? ev.artists.split(',').map(a=>a.trim()).filter(a=>a) : [];
     document.getElementById('modalContent').innerHTML = \`
       \${ev.genre ? \`<span class="badge-genre">\${ev.genre}</span>\` : ''}
@@ -1215,10 +1348,10 @@ async function showDetail(id) {
       <div style="border-top:1px solid var(--border)">
         <div class="modal-info-row">
           <i class="fas fa-calendar-alt" style="color:var(--gold)"></i>
-          <span class="val">\${d.getFullYear()}年\${d.getMonth()+1}月\${d.getDate()}日（\${wd}）</span>
+          <span class="val">\${dateStr}</span>
         </div>
-        \${ev.open_time ? \`<div class="modal-info-row"><i class="fas fa-door-open"></i><span>開場</span><span class="val">\${ev.open_time}</span></div>\` : ''}
-        \${ev.start_time ? \`<div class="modal-info-row"><i class="fas fa-play-circle" style="color:var(--red)"></i><span>開演</span><span class="val">\${ev.start_time}</span></div>\` : ''}
+        \${ev.open_time ? \`<div class="modal-info-row"><i class="fas fa-door-open"></i><span>\${openLbl}</span><span class="val">\${ev.open_time}</span></div>\` : ''}
+        \${ev.start_time ? \`<div class="modal-info-row"><i class="fas fa-play-circle" style="color:var(--red)"></i><span>\${startLbl}</span><span class="val">\${ev.start_time}</span></div>\` : ''}
         <div class="modal-info-row">
           <i class="fas fa-map-marker-alt"></i>
           <span class="val">\${ev.venue_name}</span><span style="color:var(--muted);font-size:12px">（\${ev.venue_area}）</span>
@@ -1233,8 +1366,8 @@ async function showDetail(id) {
         </div>
       \` : ''}
       \${ev.description ? \`<div class="modal-desc">\${ev.description}</div>\` : ''}
-      \${ev.ticket_url ? \`<a href="\${ev.ticket_url}" target="_blank" class="btn-ticket"><i class="fas fa-ticket" style="margin-right:8px"></i>チケット購入</a>\` : ''}
-      \${ev.venue_website ? \`<a href="\${ev.venue_website}" target="_blank" class="btn-venue-link"><i class="fas fa-globe" style="margin-right:8px"></i>会場公式サイト</a>\` : ''}
+      \${ev.ticket_url ? \`<a href="\${ev.ticket_url}" target="_blank" class="btn-ticket"><i class="fas fa-ticket" style="margin-right:8px"></i>\${ticketLbl}</a>\` : ''}
+      \${ev.venue_website ? \`<a href="\${ev.venue_website}" target="_blank" class="btn-venue-link"><i class="fas fa-globe" style="margin-right:8px"></i>\${venueLbl}</a>\` : ''}
     \`;
   } catch(e) {
     document.getElementById('modalContent').innerHTML='<p style="color:#f87171">読み込みエラー</p>';
