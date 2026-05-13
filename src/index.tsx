@@ -471,24 +471,29 @@ function mainHTML() {
     /* ─── ヒーロー ─── */
     #hero {
       position: relative; overflow: hidden;
-      padding: 72px 24px 64px;
+      padding: 140px 24px 120px;
+      min-height: 520px;
       display: flex; flex-direction: column; align-items: center; text-align: center;
       /* 写真背景 */
       background-image: url('https://www.genspark.ai/api/files/s/nKS8iySW');
       background-size: cover;
-      background-position: center 60%;
+      background-position: center 55%;
       background-repeat: no-repeat;
     }
-    /* 写真の上に暗めグラデーションオーバーレイ */
+    @media(max-width:640px){
+      #hero { padding: 100px 20px 100px; min-height: 420px; }
+    }
+    /* 写真の上に薄いオーバーレイ（上部だけ少し暗く、中央は写真を見せる） */
     #hero::before {
       content: '';
       position: absolute; inset: 0; z-index: 0;
       background:
         linear-gradient(
           to bottom,
-          rgba(8,14,28,0.62) 0%,
-          rgba(8,14,28,0.52) 50%,
-          rgba(8,14,28,0.72) 100%
+          rgba(4,10,22,0.55) 0%,
+          rgba(4,10,22,0.28) 40%,
+          rgba(4,10,22,0.28) 60%,
+          rgba(4,10,22,0.60) 100%
         );
     }
     .hero-eyebrow {
@@ -518,7 +523,7 @@ function mainHTML() {
 
     /* 区切りライン（写真下端をぼかすグラデーション） */
     .spectrum-line {
-      position: absolute; bottom: 0; left: 0; right: 0; height: 80px; z-index: 1;
+      position: absolute; bottom: 0; left: 0; right: 0; height: 120px; z-index: 1;
       background: linear-gradient(to bottom, transparent 0%, var(--bg) 100%);
       pointer-events: none;
     }
