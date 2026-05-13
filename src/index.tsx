@@ -540,10 +540,18 @@ function mainHTML() {
       -webkit-appearance: none;
       color-scheme: dark;
     }
+    input[type="date"].s-input {
+      padding-right: 10px;
+      cursor: pointer;
+    }
     input[type="date"].s-input::-webkit-calendar-picker-indicator {
       filter: invert(0.7) sepia(1) saturate(3) hue-rotate(300deg);
       cursor: pointer;
-      opacity: 0.9;
+      opacity: 0.95;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      margin-left: 4px;
     }
     .s-input:focus {
       outline: none;
@@ -676,13 +684,22 @@ function mainHTML() {
     }
 
     @media(max-width:600px){
-      .cal-cell { min-height: 52px; padding: 5px 4px; }
+      .cal-cell { min-height: 52px; padding: 5px 4px; background: var(--bg2); border-color: rgba(255,255,255,0.08); }
+      .cal-cell.has-ev { background: var(--bg2); border-color: rgba(255,255,255,0.08); }
       .ev-pill  { display: none; }
-      .cal-cell.has-ev .day-n {
-        background: var(--red); color: #fff; border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(255,58,92,0.4);
+      .ev-count-badge { display: none; }
+      .ev-more { display: none; }
+      /* イベントあり: 日付の下に小さいドット */
+      .cal-cell.has-ev .day-n::after {
+        content: ''; display: block;
+        width: 5px; height: 5px; border-radius: 50%;
+        background: var(--red);
+        position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
       }
-      .cal-cell.today .day-n { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--red); }
+      .day-n { position: relative; }
+      /* 今日は変わらず赤背景 */
+      .cal-cell.today .day-n { background: var(--red); color: #fff; box-shadow: 0 2px 8px rgba(255,58,92,0.5); }
+      .cal-cell.today .day-n::after { display: none; }
     }
 
     /* 選択日パネル */
