@@ -297,10 +297,28 @@ app.delete('/api/admin/venues/:id', authMiddleware, async (c) => {
   }
 })
 
+// site_info テーブル初期化（なければ作成＋初期データ投入）
+async function ensureSiteInfo(db: D1Database) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS site_info (
+      key   TEXT PRIMARY KEY,
+      value TEXT NOT NULL DEFAULT '',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `).run()
+  const keys = ['site_description','team','contact_email','contact_note']
+  for (const k of keys) {
+    await db.prepare(
+      `INSERT OR IGNORE INTO site_info (key, value) VALUES (?, '')`
+    ).bind(k).run()
+  }
+}
+
 // 公開API: サイト情報
 app.get('/api/site-info', async (c) => {
   const db = c.env.DB
   try {
+    await ensureSiteInfo(db)
     const result = await db.prepare('SELECT key, value FROM site_info').all()
     const info: Record<string, string> = {}
     for (const row of result.results as any[]) info[row.key] = row.value
@@ -315,11 +333,17 @@ app.put('/api/admin/site-info', authMiddleware, async (c) => {
   const db = c.env.DB
   const body = await c.req.json()
   try {
+    await ensureSiteInfo(db)
     for (const [key, value] of Object.entries(body)) {
-      await db.prepare(
-        `INSERT INTO site_info (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-         ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP`
-      ).bind(key, value as string).run()
+      // UPDATE → 0件なら INSERT の2ステップUPSERT（D1互換）
+      const updated = await db.prepare(
+        `UPDATE site_info SET value=?, updated_at=CURRENT_TIMESTAMP WHERE key=?`
+      ).bind(value as string, key).run()
+      if (updated.meta.changes === 0) {
+        await db.prepare(
+          `INSERT INTO site_info (key, value) VALUES (?, ?)`
+        ).bind(key, value as string).run()
+      }
     }
     return c.json({ success: true })
   } catch (e: any) {
