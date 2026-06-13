@@ -48,8 +48,8 @@ app.get('/api/events', async (c) => {
     params.push(`%${genre}%`)
   }
   if (keyword) {
-    query += ` AND (e.title LIKE ? OR e.artists LIKE ? OR e.description LIKE ?)`
-    params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`)
+    query += ` AND (e.title LIKE ? OR e.description LIKE ?)`
+    params.push(`%${keyword}%`, `%${keyword}%`)
   }
 
   query += ` ORDER BY e.event_date ASC, e.start_time ASC`
@@ -188,15 +188,15 @@ app.post('/api/admin/events', authMiddleware, async (c) => {
   const body = await c.req.json()
   const db = c.env.DB
   const { venue_id, title, description, event_date, start_time, open_time, end_time,
-          artists, genre, charge_info, ticket_url, image_url, status } = body
+          genre, charge_info, ticket_url, image_url, status } = body
 
   try {
     const result = await db.prepare(`
       INSERT INTO events (venue_id, title, description, event_date, start_time, open_time, end_time,
-        artists, genre, charge_info, ticket_url, image_url, status, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        genre, charge_info, ticket_url, image_url, status, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
     `).bind(venue_id, title, description || '', event_date, start_time || '', open_time || '',
-            end_time || '', artists || '', genre || '', charge_info || '', ticket_url || '',
+            end_time || '', genre || '', charge_info || '', ticket_url || '',
             image_url || '', status || 'published').run()
     return c.json({ id: result.meta.last_row_id, success: true })
   } catch (e) {
@@ -210,16 +210,16 @@ app.put('/api/admin/events/:id', authMiddleware, async (c) => {
   const body = await c.req.json()
   const db = c.env.DB
   const { venue_id, title, description, event_date, start_time, open_time, end_time,
-          artists, genre, charge_info, ticket_url, image_url, status } = body
+          genre, charge_info, ticket_url, image_url, status } = body
 
   try {
     await db.prepare(`
       UPDATE events SET venue_id=?, title=?, description=?, event_date=?, start_time=?,
-        open_time=?, end_time=?, artists=?, genre=?, charge_info=?, ticket_url=?, image_url=?,
+        open_time=?, end_time=?, genre=?, charge_info=?, ticket_url=?, image_url=?,
         status=?, updated_at=CURRENT_TIMESTAMP
       WHERE id=?
     `).bind(venue_id, title, description || '', event_date, start_time || '', open_time || '',
-            end_time || '', artists || '', genre || '', charge_info || '', ticket_url || '',
+            end_time || '', genre || '', charge_info || '', ticket_url || '',
             image_url || '', status || 'published', id).run()
     return c.json({ success: true })
   } catch (e) {
@@ -940,6 +940,24 @@ function mainHTML() {
           <option value="" id="opt-venue-all">すべての会場</option>
         </select>
       </div>
+      <div>
+        <span class="s-label" id="lbl-genre"><i class="fas fa-guitar" style="margin-right:4px"></i>ジャンル</span>
+        <select id="searchGenre" class="s-input">
+          <option value="" id="opt-genre-all">すべてのジャンル</option>
+          <option value="ロック">ロック</option>
+          <option value="ジャズ">ジャズ</option>
+          <option value="ブルース">ブルース</option>
+          <option value="アコースティック">アコースティック</option>
+          <option value="ポップス">ポップス</option>
+          <option value="ソウル">ソウル・ファンク</option>
+          <option value="メタル">メタル</option>
+          <option value="パンク">パンク</option>
+          <option value="アイドル">アイドル</option>
+          <option value="ヒップホップ">ヒップホップ</option>
+          <option value="レゲエ">レゲエ</option>
+          <option value="オールジャンル">オールジャンル</option>
+        </select>
+      </div>
 
     </div>
     <div style="display:flex;gap:8px">
@@ -1304,7 +1322,7 @@ function renderCard(ev) {
       <div class="ev-card-date">\${dl}</div>
       <div class="ev-card-title">\${ev.title}</div>
       <div class="ev-card-venue"><i class="fas fa-store"></i>\${ev.venue_name}</div>
-      \${ev.artists ? \`<div class="ev-card-artists"><i class="fas fa-microphone" style="margin-right:4px;opacity:.5"></i>\${ev.artists}</div>\` : ''}
+      \${ev.description ? \`<div class="ev-card-artists"><i class="fas fa-align-left" style="margin-right:4px;opacity:.5"></i>\${ev.description.length>42 ? ev.description.slice(0,42)+'…' : ev.description}</div>\` : ''}
       <div class="ev-card-footer">
         <span class="ev-card-time">\${tl}\${sl}</span>
         <span class="ev-card-price">\${ev.charge_info||''}</span>
@@ -1318,17 +1336,19 @@ async function doSearch() {
   const date = document.getElementById('searchDate').value;
   const area = document.getElementById('searchArea').value;
   const vid  = document.getElementById('searchVenue').value;
-  const kw   = document.getElementById('searchKeyword').value;
+  const genre = document.getElementById('searchGenre').value;
+  const kw    = document.getElementById('searchKeyword').value;
   if (date)  p.date = date;
   if (area)  p.area = area;
   if (vid)   p.venue_id = vid;
+  if (genre) p.genre = genre;
   if (kw)    p.keyword = kw;
   showTab('list');
   await loadListEvents(p);
 }
 
 function clearSearch() {
-  ['searchDate','searchArea','searchVenue','searchKeyword']
+  ['searchDate','searchArea','searchVenue','searchGenre','searchKeyword']
     .forEach(id => { const el=document.getElementById(id); if(el.tagName==='SELECT') el.selectedIndex=0; else el.value=''; });
   allEvents=[];
   document.getElementById('eventList').innerHTML='';
@@ -1352,7 +1372,6 @@ async function showDetail(id) {
     const startLbl = isEn ? 'Show Start' : '開演';
     const ticketLbl   = isEn ? 'Buy Tickets' : 'チケット購入';
     const venueLbl    = isEn ? 'Venue Website' : '会場公式サイト';
-    const artists = ev.artists ? ev.artists.split(',').map(a=>a.trim()).filter(a=>a) : [];
     document.getElementById('modalContent').innerHTML = \`
       \${ev.genre ? \`<span class="badge-genre">\${ev.genre}</span>\` : ''}
       <h2 class="modal-title">\${ev.title}</h2>
@@ -1370,13 +1389,7 @@ async function showDetail(id) {
         \${ev.venue_address ? \`<div class="modal-info-row"><i class="fas fa-location-dot"></i><span style="color:#888;font-size:12px">\${ev.venue_address}</span></div>\` : ''}
         \${ev.charge_info ? \`<div class="modal-info-row"><i class="fas fa-ticket" style="color:var(--gold)"></i><span class="val" style="color:var(--gold)">\${ev.charge_info}</span></div>\` : ''}
       </div>
-      \${artists.length ? \`
-        <div style="margin-top:16px">
-          <div style="font-size:10px;letter-spacing:0.2em;color:var(--muted);margin-bottom:8px">ARTIST</div>
-          \${artists.map(a=>\`<span class="artist-chip">\${a}</span>\`).join('')}
-        </div>
-      \` : ''}
-      \${ev.description ? \`<div class="modal-desc">\${ev.description}</div>\` : ''}
+      \${ev.description ? \`<div class="modal-desc" style="white-space:pre-wrap">\${ev.description}</div>\` : ''}
       \${ev.ticket_url ? \`<a href="\${ev.ticket_url}" target="_blank" class="btn-ticket"><i class="fas fa-ticket" style="margin-right:8px"></i>\${ticketLbl}</a>\` : ''}
       \${ev.venue_website ? \`<a href="\${ev.venue_website}" target="_blank" class="btn-venue-link"><i class="fas fa-globe" style="margin-right:8px"></i>\${venueLbl}</a>\` : ''}
     \`;
@@ -1661,10 +1674,14 @@ function adminHTML() {
           <input type="text" id="evStartTime" class="input-field" placeholder="19:00" pattern="^([01]?[0-9]|2[0-3]):[0-5][0-9]$">
         </div>
         <div class="form-group col-span-2">
-          <label>出演アーティスト <span style="color:#6b7280;font-weight:400">（1行に1アーティスト）</span></label>
-          <textarea id="evArtists" class="input-field" rows="3" placeholder="バンド名A
-バンド名B
-バンド名C"></textarea>
+          <label>ジャンル</label>
+          <select id="evGenre" class="input-field">
+            <option value="">選択してください</option>
+            <option>ロック</option><option>ジャズ</option><option>ブルース</option>
+            <option>アコースティック</option><option>ポップス・ロック</option><option>ソウル・ファンク</option>
+            <option>メタル</option><option>パンク</option><option>アイドル</option>
+            <option>ヒップホップ</option><option>レゲエ</option><option>オールジャンル</option>
+          </select>
         </div>
         <div class="form-group">
           <label>料金情報</label>
@@ -1675,8 +1692,11 @@ function adminHTML() {
           <input type="url" id="evTicket" class="input-field" placeholder="https://...">
         </div>
         <div class="form-group col-span-2">
-          <label>イベント説明</label>
-          <textarea id="evDesc" class="input-field" rows="3" placeholder="イベントの詳細説明..."></textarea>
+          <label>イベント詳細 <span style="color:#6b7280;font-weight:400">（出演アーティスト・内容・注意事項など自由に記入）</span></label>
+          <textarea id="evDesc" class="input-field" rows="5" placeholder="例:
+出演: バンドA / バンドB / DJ ○○
+
+熊本最大のロックフェス！チケット絶賛発売中。"></textarea>
         </div>
         <div class="form-group">
           <label>公開ステータス</label>
@@ -1899,7 +1919,7 @@ function renderAdminEvents(events) {
           </div>
           <p class="font-bold truncate">\${ev.title}</p>
           <p class="text-sm text-gray-400"><i class="fas fa-store mr-1"></i>\${ev.venue_name}（\${ev.venue_area}）</p>
-          \${ev.artists ? \`<p class="text-xs text-gray-500 mt-1">\${ev.artists}</p>\` : ''}
+          \${ev.description ? \`<p class="text-xs text-gray-500 mt-1 truncate">\${ev.description.slice(0,50)}\${ev.description.length>50?'…':''}</p>\` : ''}
         </div>
         <div class="flex gap-2 flex-shrink-0">
           <button class="btn-edit" onclick="openEventFormById(\${ev.id})">編集</button>
@@ -1930,7 +1950,7 @@ function openEventForm(ev) {
     document.getElementById('evDate').value = ev.event_date || '';
     document.getElementById('evOpenTime').value = ev.open_time || '';
     document.getElementById('evStartTime').value = ev.start_time || '';
-    document.getElementById('evArtists').value = ev.artists || '';
+    document.getElementById('evGenre').value = ev.genre || '';
     document.getElementById('evCharge').value = ev.charge_info || '';
     document.getElementById('evTicket').value = ev.ticket_url || '';
     document.getElementById('evDesc').value = ev.description || '';
@@ -1958,7 +1978,7 @@ async function saveEvent(e) {
     event_date: document.getElementById('evDate').value,
     open_time: document.getElementById('evOpenTime').value,
     start_time: document.getElementById('evStartTime').value,
-    artists: document.getElementById('evArtists').value,
+    genre: document.getElementById('evGenre').value,
     charge_info: document.getElementById('evCharge').value,
     ticket_url: document.getElementById('evTicket').value,
     status: document.getElementById('evStatus').value,
