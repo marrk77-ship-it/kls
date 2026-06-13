@@ -297,6 +297,36 @@ app.delete('/api/admin/venues/:id', authMiddleware, async (c) => {
   }
 })
 
+// 公開API: サイト情報
+app.get('/api/site-info', async (c) => {
+  const db = c.env.DB
+  try {
+    const result = await db.prepare('SELECT key, value FROM site_info').all()
+    const info: Record<string, string> = {}
+    for (const row of result.results as any[]) info[row.key] = row.value
+    return c.json({ info })
+  } catch (e) {
+    return c.json({ info: {} })
+  }
+})
+
+// 管理者: サイト情報更新
+app.put('/api/admin/site-info', authMiddleware, async (c) => {
+  const db = c.env.DB
+  const body = await c.req.json()
+  try {
+    for (const [key, value] of Object.entries(body)) {
+      await db.prepare(
+        `INSERT INTO site_info (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+         ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP`
+      ).bind(key, value as string).run()
+    }
+    return c.json({ success: true })
+  } catch (e: any) {
+    return c.json({ error: 'Update error', detail: e?.message || '' }, 500)
+  }
+})
+
 // 公開API: 地区一覧
 app.get('/api/areas', async (c) => {
   const db = c.env.DB
@@ -891,6 +921,61 @@ function mainHTML() {
       font-size: 18px; letter-spacing: 0.1em;
       color: rgba(30,26,22,0.25); margin-bottom: 6px;
     }
+    .footer-about-link {
+      display: inline-block; margin-top: 12px;
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      border-bottom: 1px solid var(--border-mid);
+      padding-bottom: 1px;
+      transition: color 0.2s;
+    }
+    .footer-about-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ─── Aboutモーダル ─── */
+    #aboutModal {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    #aboutModal.hidden { display: none; }
+    #aboutBox {
+      background: var(--bg2);
+      border: 1px solid var(--border-mid);
+      border-radius: 16px;
+      padding: 36px 32px;
+      width: 100%; max-width: 520px;
+      position: relative;
+      box-shadow: 0 16px 60px rgba(0,0,0,0.18);
+    }
+    @media(max-width:640px){ #aboutBox { padding: 28px 20px; } }
+    .about-close {
+      position: absolute; top: 16px; right: 18px;
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: var(--muted); line-height: 1;
+    }
+    .about-close:hover { color: var(--text); }
+    .about-site-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: 0.1em;
+      color: var(--text); margin-bottom: 4px;
+    }
+    .about-section {
+      margin-top: 20px; padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .about-section-label {
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px; display: block;
+    }
+    .about-section-value {
+      font-size: 14px; color: var(--text); line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .about-section-value a {
+      color: var(--accent); text-decoration: none;
+    }
+    .about-section-value a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -1031,7 +1116,27 @@ function mainHTML() {
 <footer>
   <div class="footer-logo">KUMAMOTO LIVE GUIDE</div>
   <div id="footer-desc">熊本市内のライブハウス・ライブバーのスケジュール情報サイト</div>
+  <a href="#" class="footer-about-link" onclick="showAbout();return false;">
+    <i class="fas fa-info-circle" style="margin-right:5px"></i>About
+  </a>
 </footer>
+
+<!-- About モーダル -->
+<div id="aboutModal" class="hidden" onclick="if(event.target===this)closeAbout()">
+  <div id="aboutBox">
+    <button class="about-close" onclick="closeAbout()"><i class="fas fa-times"></i></button>
+    <div class="about-site-title">KUMAMOTO LIVE GUIDE</div>
+    <p id="aboutDesc" class="about-section-value" style="margin-top:8px;font-size:13px;color:var(--muted)"></p>
+    <div class="about-section" id="aboutTeamSection">
+      <span class="about-section-label"><i class="fas fa-users" style="margin-right:4px"></i>運営</span>
+      <p id="aboutTeam" class="about-section-value"></p>
+    </div>
+    <div class="about-section" id="aboutContactSection">
+      <span class="about-section-label"><i class="fas fa-envelope" style="margin-right:4px"></i>お問い合わせ</span>
+      <p id="aboutContact" class="about-section-value"></p>
+    </div>
+  </div>
+</div>
 
 <script>
 let currentMonth = new Date();
@@ -1596,8 +1701,34 @@ function adminHTML() {
     <!-- ==================== 設定 ==================== -->
     <div id="section-settings" class="p-6 hidden">
       <h2 class="text-xl font-bold mb-6">設定</h2>
+
+      <!-- サイト情報 -->
+      <div class="card p-6 mb-6">
+        <h3 class="font-bold mb-1 text-gray-200"><i class="fas fa-info-circle mr-2 text-amber-400"></i>Aboutページ情報</h3>
+        <p class="text-xs text-gray-500 mb-4">フッターの「About」リンクで表示される内容です。</p>
+        <div class="form-group">
+          <label>サイト説明</label>
+          <textarea id="siDesc" class="input-field" rows="3" placeholder="このサイトについての説明..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>運営チーム / 運営者名</label>
+          <input type="text" id="siTeam" class="input-field" placeholder="例: 熊本ライブガイド 運営チーム">
+        </div>
+        <div class="form-group">
+          <label>連絡先メールアドレス</label>
+          <input type="email" id="siEmail" class="input-field" placeholder="例: info@example.com">
+        </div>
+        <div class="form-group">
+          <label>お問い合わせ補足 <span style="color:#6b7280;font-weight:400">（SNSリンクや備考など）</span></label>
+          <textarea id="siNote" class="input-field" rows="2" placeholder="例: X(Twitter): @kumamoto_live"></textarea>
+        </div>
+        <p id="siMsg" class="text-sm mb-3 hidden"></p>
+        <button onclick="saveSiteInfo()" class="btn-primary"><i class="fas fa-save mr-1"></i>保存する</button>
+      </div>
+
+      <!-- パスワード変更 -->
       <div class="card p-6 max-w-md">
-        <h3 class="font-bold mb-4 text-gray-200">パスワード変更</h3>
+        <h3 class="font-bold mb-4 text-gray-200"><i class="fas fa-lock mr-2 text-amber-400"></i>パスワード変更</h3>
         <div class="form-group">
           <label>現在のパスワード</label>
           <input type="password" id="curPw" class="input-field">
@@ -1879,6 +2010,7 @@ function showSection(name) {
   });
   if (name === 'venues') loadAdminVenuesTable();
   if (name === 'areas') loadAreasTable();
+  if (name === 'settings') loadSiteInfo();
   // モバイルではメニュー選択後に自動クローズ
   closeSidebar();
 }
@@ -2213,6 +2345,62 @@ async function deleteArea(id) {
 }
 
 // ==================== 設定 ====================
+// ==================== About モーダル ====================
+async function showAbout() {
+  document.getElementById('aboutModal').classList.remove('hidden');
+  try {
+    const res = await fetch('/api/site-info');
+    const { info } = await res.json();
+    document.getElementById('aboutDesc').textContent = info.site_description || '';
+    document.getElementById('aboutTeam').textContent = info.team || '';
+    // 連絡先：メール＋補足を組み合わせ
+    const emailEl = document.getElementById('aboutContact');
+    const parts = [];
+    if (info.contact_email) parts.push('<a href="mailto:' + info.contact_email + '">' + info.contact_email + '</a>');
+    if (info.contact_note) parts.push(info.contact_note);
+    emailEl.innerHTML = parts.join('<br>') || '—';
+    // 空なら非表示
+    document.getElementById('aboutTeamSection').style.display = info.team ? '' : 'none';
+    document.getElementById('aboutContactSection').style.display = (info.contact_email || info.contact_note) ? '' : 'none';
+  } catch(e) {}
+}
+function closeAbout() {
+  document.getElementById('aboutModal').classList.add('hidden');
+}
+
+// ==================== サイト情報（設定）====================
+async function loadSiteInfo() {
+  try {
+    const res = await fetch('/api/site-info');
+    const { info } = await res.json();
+    document.getElementById('siDesc').value  = info.site_description || '';
+    document.getElementById('siTeam').value  = info.team || '';
+    document.getElementById('siEmail').value = info.contact_email || '';
+    document.getElementById('siNote').value  = info.contact_note || '';
+  } catch(e) {}
+}
+async function saveSiteInfo() {
+  const msg = document.getElementById('siMsg');
+  msg.classList.add('hidden');
+  const body = {
+    site_description: document.getElementById('siDesc').value,
+    team:             document.getElementById('siTeam').value,
+    contact_email:    document.getElementById('siEmail').value,
+    contact_note:     document.getElementById('siNote').value,
+  };
+  try {
+    const res = await apiFetch('/api/admin/site-info', { method: 'PUT', body: JSON.stringify(body) });
+    msg.textContent = res.ok ? '保存しました' : '保存エラー';
+    msg.className = 'text-sm mb-3 ' + (res.ok ? 'text-green-400' : 'text-red-400');
+    msg.classList.remove('hidden');
+    setTimeout(() => msg.classList.add('hidden'), 3000);
+  } catch(e) {
+    msg.textContent = 'エラーが発生しました';
+    msg.className = 'text-sm mb-3 text-red-400';
+    msg.classList.remove('hidden');
+  }
+}
+
 async function changePassword() {
   const cur = document.getElementById('curPw').value;
   const nw = document.getElementById('newPw').value;
