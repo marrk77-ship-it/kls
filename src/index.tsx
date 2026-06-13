@@ -1531,7 +1531,30 @@ function closeModal(e) {
   if (!e || e.target===document.getElementById('eventModal'))
     document.getElementById('eventModal').classList.add('hidden');
 }
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeAbout(); }
+});
+
+// ==================== About モーダル ====================
+async function showAbout() {
+  document.getElementById('aboutModal').classList.remove('hidden');
+  try {
+    const res = await fetch('/api/site-info');
+    const { info } = await res.json();
+    document.getElementById('aboutDesc').textContent = info.site_description || '';
+    document.getElementById('aboutTeam').textContent = info.team || '';
+    const emailEl = document.getElementById('aboutContact');
+    const parts = [];
+    if (info.contact_email) parts.push('<a href="mailto:' + info.contact_email + '">' + info.contact_email + '</a>');
+    if (info.contact_note)  parts.push(info.contact_note);
+    emailEl.innerHTML = parts.join('<br>') || '—';
+    document.getElementById('aboutTeamSection').style.display    = info.team ? '' : 'none';
+    document.getElementById('aboutContactSection').style.display = (info.contact_email || info.contact_note) ? '' : 'none';
+  } catch(e) {}
+}
+function closeAbout() {
+  document.getElementById('aboutModal').classList.add('hidden');
+}
 
 init();
 </script>
